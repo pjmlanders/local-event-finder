@@ -30,7 +30,7 @@ export async function searchEvents(_req: Request, res: Response, next: NextFunct
       keyword: query.keyword,
       eventType: query.eventType,
       classificationName: query.eventType ? EVENT_TYPE_TO_CLASSIFICATION[query.eventType] : undefined,
-      startDateTime: query.startDate ? formatDateForTM(query.startDate) : undefined,
+      startDateTime: query.startDate ? formatDateForTM(query.startDate) : new Date().toISOString(),
       endDateTime: query.endDate ? formatDateForTM(query.endDate) : undefined,
       page: query.page,
       size: query.size,
