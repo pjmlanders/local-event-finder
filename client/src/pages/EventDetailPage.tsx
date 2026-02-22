@@ -2,21 +2,10 @@ import { useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
-import L from 'leaflet'
-import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png'
-import markerIcon from 'leaflet/dist/images/marker-icon.png'
-import markerShadow from 'leaflet/dist/images/marker-shadow.png'
 import { apiClient } from '../api/client'
 import type { UnifiedEvent } from 'shared'
 import { formatEventDate, formatEventTime, formatPrice } from '../utils/formatDate'
-
-// Fix Leaflet's default marker icons broken by Vite asset bundling
-delete (L.Icon.Default.prototype as unknown as Record<string, unknown>)._getIconUrl
-L.Icon.Default.mergeOptions({
-  iconUrl: markerIcon,
-  iconRetinaUrl: markerIcon2x,
-  shadowUrl: markerShadow,
-})
+import FavoriteButton from '../components/ui/FavoriteButton'
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -337,17 +326,7 @@ export default function EventDetailPage() {
 
           {/* Action buttons */}
           <div className="flex flex-wrap gap-3">
-            {/* Favorites stub — enabled in Phase 5 */}
-            <button
-              disabled
-              title="Sign in to save favorites (coming soon)"
-              className="flex items-center gap-2 rounded-lg border border-gray-300 px-4 py-2.5 text-sm font-medium text-gray-400 cursor-not-allowed"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-              </svg>
-              Add to Favorites
-            </button>
+            <FavoriteButton event={event} size="md" />
 
             {/* Buy Tickets */}
             <a

@@ -7,6 +7,9 @@ const envSchema = z.object({
   ANTHROPIC_API_KEY: z.string().optional(),
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
   CLIENT_URL: z.string().url().optional(),
+  FIREBASE_SERVICE_ACCOUNT_KEY: z.string().optional(),
+  SUPABASE_URL: z.string().url().optional(),
+  SUPABASE_SERVICE_KEY: z.string().optional(),
 })
 
 const parsed = envSchema.safeParse(process.env)

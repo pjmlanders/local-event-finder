@@ -5,6 +5,7 @@ import { rateLimit } from 'express-rate-limit'
 import { eventsRouter } from './routes/events.routes.js'
 import { geocodeRouter } from './routes/geocode.routes.js'
 import { aiRouter } from './routes/ai.routes.js'
+import { usersRouter } from './routes/users.routes.js'
 import { errorHandler } from './middleware/errorHandler.js'
 
 export function createApp() {
@@ -39,6 +40,7 @@ export function createApp() {
   app.use('/api/events', eventsRouter)
   app.use('/api/geocode', geocodeRouter)
   app.use('/api/ai', aiRouter)
+  app.use('/api/users', usersRouter)
 
   app.use(errorHandler)
 
