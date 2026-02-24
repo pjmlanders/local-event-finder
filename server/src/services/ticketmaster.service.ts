@@ -47,9 +47,11 @@ export async function searchTicketmaster(params: TicketmasterSearchParams): Prom
   url.searchParams.set('latlong', `${params.lat},${params.lng}`)
   url.searchParams.set('radius', String(params.radius))
   url.searchParams.set('unit', 'miles')
-  url.searchParams.set('size', String(params.size))
+  url.searchParams.set('countryCode', 'US')
+  url.searchParams.set('size', String(Math.min(params.size, 200)))
   url.searchParams.set('page', String(params.page))
   url.searchParams.set('sort', buildSortParam(params.sort))
+  url.searchParams.set('includeSpellcheck', 'yes')
 
   if (params.keyword) {
     url.searchParams.set('keyword', params.keyword)
@@ -71,7 +73,8 @@ export async function searchTicketmaster(params: TicketmasterSearchParams): Prom
   if (!response.ok) {
     const errorText = await response.text()
     logger.error({ status: response.status, body: errorText }, 'Ticketmaster API error')
-    throw new Error(`Ticketmaster API returned ${response.status}`)
+    // Return empty so aggregator can still return SeatGeek results; avoid 500 for the whole request
+    return { events: [], total: 0 }
   }
 
   const data: TmSearchResponse = await response.json()

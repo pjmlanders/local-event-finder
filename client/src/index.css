@@ -1,1 +1,86 @@
 @import "tailwindcss";
+
+/* ─── Design System: Local Event Finder ───────────────────────────────────── */
+:root {
+  --font-sans: 'DM Sans', ui-sans-serif, system-ui, sans-serif;
+
+  /* Background — warm off-white with subtle ambient "stage light" glows */
+  --app-bg: #f7f6fb;
+  --app-bg-gradient:
+    radial-gradient(ellipse 75% 40% at 10% 0%,   rgba(124, 58, 237, 0.07) 0%, transparent 65%),
+    radial-gradient(ellipse 55% 30% at 92% 5%,   rgba(79,  70, 229, 0.05) 0%, transparent 65%),
+    radial-gradient(ellipse 50% 28% at 55% 100%, rgba(245,158,  11, 0.05) 0%, transparent 60%),
+    linear-gradient(180deg, #f0eefa 0%, #f5f4fb 35%, #f7f6fb 65%, #f1f5f9 100%);
+  --app-bg-image: none;
+  --app-bg-overlay: rgba(247, 246, 251, 0.9);
+
+  /* Surfaces */
+  --surface: #ffffff;
+  --surface-hover: #fafaff;
+  --surface-border: rgba(79, 70, 229, 0.08);
+  --surface-shadow: 0 1px 3px rgba(79, 70, 229, 0.05), 0 2px 8px rgba(0, 0, 0, 0.04);
+  --surface-shadow-hover: 0 4px 16px rgba(79, 70, 229, 0.10), 0 2px 4px rgba(0, 0, 0, 0.04);
+
+  /* Accent */
+  --accent: #7c3aed;
+  --accent-hover: #6d28d9;
+  --accent-muted: #a78bfa;
+  --accent-bg: #f5f3ff;
+}
+
+* {
+  font-family: var(--font-sans);
+}
+
+.app-shell {
+  min-height: 100vh;
+  background: var(--app-bg-gradient);
+  background-color: var(--app-bg);
+  color: #1e293b;
+}
+
+.app-shell--with-image {
+  background-image: var(--app-bg-image);
+  background-size: cover;
+  background-position: center;
+}
+.app-shell--with-image::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: var(--app-bg-overlay);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.app-shell > header,
+.app-shell > main,
+.app-shell > nav,
+.app-shell .app-shell__spacer {
+  position: relative;
+  z-index: 1;
+}
+
+/* Elevated cards */
+.surface-card {
+  background: var(--surface);
+  border: 1px solid var(--surface-border);
+  box-shadow: var(--surface-shadow);
+  border-radius: 12px;
+}
+
+/* Section headers */
+.section-title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #7c3aed;
+}
+
+.section-title-lg {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #0f172a;
+  letter-spacing: -0.01em;
+}

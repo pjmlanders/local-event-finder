@@ -2,9 +2,10 @@ import Anthropic from '@anthropic-ai/sdk'
 import { env } from '../config/env.js'
 import { logger } from '../utils/logger.js'
 import { searchAllSources } from './event-aggregator.service.js'
+import { searchWebForEvents } from './web-search.service.js'
 import type { UnifiedEvent } from 'shared'
 
-const MODEL = 'claude-sonnet-4-20250514'
+const MODEL = 'claude-sonnet-4-6'
 
 const SEARCH_TOOL: Anthropic.Tool = {
   name: 'search_events',
@@ -170,6 +171,8 @@ export async function aiSearchEvents(
           sources: {
             ticketmaster: searchResult.sources.ticketmaster + broader.sources.ticketmaster,
             seatgeek: searchResult.sources.seatgeek + broader.sources.seatgeek,
+            eventbrite: searchResult.sources.eventbrite + broader.sources.eventbrite,
+            webSearch: searchResult.sources.webSearch + broader.sources.webSearch,
             duplicatesRemoved: searchResult.sources.duplicatesRemoved + broader.sources.duplicatesRemoved,
           },
         }
@@ -200,6 +203,8 @@ export async function aiSearchEvents(
           sources: {
             ticketmaster: searchResult.sources.ticketmaster + evenBroader.sources.ticketmaster,
             seatgeek: searchResult.sources.seatgeek + evenBroader.sources.seatgeek,
+            eventbrite: searchResult.sources.eventbrite + evenBroader.sources.eventbrite,
+            webSearch: searchResult.sources.webSearch + evenBroader.sources.webSearch,
             duplicatesRemoved: searchResult.sources.duplicatesRemoved + evenBroader.sources.duplicatesRemoved,
           },
         }
@@ -210,7 +215,7 @@ export async function aiSearchEvents(
   // Step 4: Use Claude web search for events not found in structured APIs
   let webSearchEvents: UnifiedEvent[] = []
   try {
-    webSearchEvents = await searchWebForEvents(client, query, lat, lng, searchRadius, searchResult.events)
+    webSearchEvents = await searchWebForEvents(query, lat, lng, searchRadius, searchResult.events)
     if (webSearchEvents.length > 0) {
       logger.info({ webResults: webSearchEvents.length }, 'Found additional events via web search')
       // Add web search events that aren't duplicates
@@ -240,7 +245,7 @@ export async function aiSearchEvents(
     source: e.source,
   }))
 
-  const sourceBreakdown = `Sources: ${searchResult.sources.ticketmaster} from Ticketmaster, ${searchResult.sources.seatgeek} from SeatGeek, ${webSearchEvents.length} from web search. ${searchResult.sources.duplicatesRemoved} duplicates removed.`
+  const sourceBreakdown = `Sources: ${searchResult.sources.ticketmaster} from Ticketmaster, ${searchResult.sources.seatgeek} from SeatGeek, ${searchResult.sources.eventbrite} from Eventbrite, ${webSearchEvents.length} from web search. ${searchResult.sources.duplicatesRemoved} duplicates removed.`
 
   const summaryResponse = await client.messages.create({
     model: MODEL,
@@ -272,134 +277,4 @@ export async function aiSearchEvents(
   }
 }
 
-/**
- * Use Claude's web search to find events from sources beyond Ticketmaster/SeatGeek.
- * Returns UnifiedEvent objects parsed from web results.
- */
-async function searchWebForEvents(
-  client: Anthropic,
-  query: string,
-  lat: number,
-  lng: number,
-  radius: number,
-  existingEvents: UnifiedEvent[],
-): Promise<UnifiedEvent[]> {
-  const today = new Date().toISOString().split('T')[0]
-
-  // Determine rough location name for the web search
-  const sampleCity = existingEvents[0]?.venue.city ?? 'the area'
-  const sampleState = existingEvents[0]?.venue.state ?? ''
-  const locationLabel = sampleState ? `${sampleCity}, ${sampleState}` : sampleCity
-
-  const WEB_EXTRACT_TOOL: Anthropic.Tool = {
-    name: 'extract_events',
-    description: 'Extract structured event information from web search results.',
-    input_schema: {
-      type: 'object' as const,
-      properties: {
-        events: {
-          type: 'array',
-          items: {
-            type: 'object',
-            properties: {
-              name: { type: 'string', description: 'Event name' },
-              venue: { type: 'string', description: 'Venue name' },
-              city: { type: 'string', description: 'City' },
-              state: { type: 'string', description: 'State abbreviation' },
-              date: { type: 'string', description: 'Date in YYYY-MM-DD format' },
-              time: { type: 'string', description: 'Time in HH:MM:SS format or null' },
-              eventType: {
-                type: 'string',
-                enum: ['music', 'sports', 'theatre', 'musical', 'comedy', 'family', 'film', 'other'],
-              },
-              url: { type: 'string', description: 'URL to buy tickets or event page' },
-              description: { type: 'string', description: 'Brief description' },
-              priceMin: { type: 'number', description: 'Minimum price or null' },
-              priceMax: { type: 'number', description: 'Maximum price or null' },
-            },
-            required: ['name', 'venue', 'city', 'state', 'date', 'eventType', 'url'],
-          },
-        },
-      },
-      required: ['events'],
-    },
-  }
-
-  const existingEventNames = existingEvents.slice(0, 10).map(e => e.name).join(', ')
-
-  const webResponse = await client.messages.create({
-    model: MODEL,
-    max_tokens: 4096,
-    system: `You are an event research assistant. Today is ${today}. Search the web for live events matching the user's query. Focus on finding events from venue websites, Eventbrite, local event calendars, and other sources NOT typically found on Ticketmaster or SeatGeek. Extract structured event data using the extract_events tool. Only include events with confirmed dates and venues. Do not include events that are clearly the same as the ones already found.`,
-    messages: [
-      {
-        role: 'user',
-        content: `Search for: "${query}" near ${locationLabel} (within ${radius} miles). Today is ${today}.\n\nWe already have these events from Ticketmaster/SeatGeek: ${existingEventNames || 'none'}\n\nPlease search the web to find additional events NOT in that list, particularly from venue websites, Eventbrite, local event listings, etc. Extract any events you find using the extract_events tool.`,
-      },
-    ],
-    tools: [
-      WEB_EXTRACT_TOOL,
-      { type: 'web_search_20250305', name: 'web_search', max_uses: 5 } as unknown as Anthropic.Tool,
-    ],
-  })
-
-  // Find the extract_events tool call in the response
-  const extractBlock = webResponse.content.find(
-    (block): block is Anthropic.ToolUseBlock =>
-      block.type === 'tool_use' && block.name === 'extract_events',
-  )
-
-  if (!extractBlock) {
-    logger.debug('Claude web search did not return structured events')
-    return []
-  }
-
-  const extracted = extractBlock.input as {
-    events: Array<{
-      name: string
-      venue: string
-      city: string
-      state: string
-      date: string
-      time?: string
-      eventType: string
-      url: string
-      description?: string
-      priceMin?: number
-      priceMax?: number
-    }>
-  }
-
-  // Convert to UnifiedEvent format
-  return extracted.events
-    .filter(e => e.name && e.venue && e.date && e.url)
-    .map((e, i) => ({
-      id: `web_${Date.now()}_${i}`,
-      source: 'web' as const,
-      sourceId: `web_${i}`,
-      name: e.name,
-      description: e.description ?? null,
-      eventType: (e.eventType as UnifiedEvent['eventType']) ?? 'other',
-      genre: null,
-      subGenre: null,
-      startDate: e.date,
-      startTime: e.time ?? null,
-      endDate: null,
-      timezone: null,
-      dateStatus: 'confirmed' as const,
-      venue: {
-        name: e.venue,
-        address: null,
-        city: e.city,
-        state: e.state,
-        postalCode: null,
-        latitude: lat, // Approximate — web events don't always have exact coords
-        longitude: lng,
-      },
-      imageUrl: null,
-      images: [],
-      priceRange: e.priceMin != null ? { min: e.priceMin, max: e.priceMax ?? null, currency: 'USD' } : null,
-      url: e.url,
-      popularity: null,
-    }))
-}
+// searchWebForEvents is now in web-search.service.ts

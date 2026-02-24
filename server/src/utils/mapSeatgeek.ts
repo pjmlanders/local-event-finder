@@ -1,5 +1,7 @@
 import type { UnifiedEvent, EventType } from 'shared'
 import type { SgEvent } from '../types/seatgeek.types.js'
+import { withAffiliateParams } from './affiliateUrls.js'
+import { env } from '../config/env.js'
 
 const TYPE_MAP: Record<string, EventType> = {
   concert: 'music',
@@ -98,7 +100,10 @@ export function mapSeatgeekEvent(sg: SgEvent): UnifiedEvent | null {
         }
       : null,
 
-    url: sg.url,
+    url: withAffiliateParams(sg.url, 'seatgeek', {
+      ticketmaster: env.TICKETMASTER_AFFILIATE_ID,
+      seatgeek: env.SEATGEEK_AFFILIATE_ID,
+    }),
     popularity: sg.score > 0 ? Math.round(sg.score * 100) : null,
   }
 }

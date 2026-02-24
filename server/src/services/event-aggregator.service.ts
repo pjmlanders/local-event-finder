@@ -1,5 +1,8 @@
 import { searchTicketmaster } from './ticketmaster.service.js'
 import { searchSeatgeek } from './seatgeek.service.js'
+import { searchEventbrite } from './eventbrite.service.js'
+import { searchWebForEvents } from './web-search.service.js'
+import { env } from '../config/env.js'
 import { logger } from '../utils/logger.js'
 import type { UnifiedEvent, SourceBreakdown } from 'shared'
 
@@ -154,6 +157,7 @@ function isDuplicate(a: UnifiedEvent, b: UnifiedEvent): boolean {
 
 const SOURCE_PRIORITY: Record<string, number> = {
   ticketmaster: 3,
+  eventbrite: 3,    // Structured data, excellent small-venue coverage
   seatgeek: 2,
   web: 1,
 }
@@ -241,10 +245,17 @@ function sortEvents(events: UnifiedEvent[], sort: string): UnifiedEvent[] {
 
 const MAX_FETCH_SIZE = 200
 
+// Web search fires on keyword searches that return fewer than this many events.
+// Keeps Claude API costs low during general browse (no keyword = no web search).
+const WEB_SEARCH_THRESHOLD = 5
+
 /**
- * Fetch enough events from all sources to fill the requested page, then
- * merge, dedupe, sort, and slice to that page. Total is the deduplicated
- * count (so "X events found" matches what we have).
+ * Fetch events from all structured sources in parallel (Ticketmaster, SeatGeek,
+ * Eventbrite), deduplicate, sort, and paginate.
+ *
+ * For targeted keyword searches that yield thin results, a Claude-powered web
+ * search fallback is triggered automatically to surface events from small venues,
+ * local calendars, and other sources the structured APIs miss.
  */
 export async function searchAllSources(params: AggregatedSearchParams): Promise<{
   events: UnifiedEvent[]
@@ -253,7 +264,8 @@ export async function searchAllSources(params: AggregatedSearchParams): Promise<
 }> {
   const fetchSize = Math.min((params.page + 1) * params.size, MAX_FETCH_SIZE)
 
-  const [tmResult, sgResult] = await Promise.all([
+  // ── Fetch all structured APIs in parallel ──────────────────────────
+  const [tmResult, sgResult, ebResult] = await Promise.all([
     searchTicketmaster({
       lat: params.lat,
       lng: params.lng,
@@ -278,17 +290,68 @@ export async function searchAllSources(params: AggregatedSearchParams): Promise<
       size: fetchSize,
       sort: params.sort,
     }),
+    searchEventbrite({
+      lat: params.lat,
+      lng: params.lng,
+      radius: params.radius,
+      keyword: params.keyword,
+      eventType: params.eventType,
+      startDateTime: params.startDateTime,
+      endDateTime: params.endDateTime,
+      page: 0,
+      size: Math.min(fetchSize, 50),  // EB max page size is 50
+    }),
   ])
 
   logger.info(
-    { ticketmaster: tmResult.events.length, seatgeek: sgResult.events.length },
-    'Raw results from all sources',
+    {
+      ticketmaster: tmResult.events.length,
+      seatgeek: sgResult.events.length,
+      eventbrite: ebResult.events.length,
+    },
+    'Raw results from structured sources',
   )
 
+  // ── Deduplicate across all structured sources ──────────────────────
   const { events: deduped, duplicatesRemoved } = deduplicateAllSources([
     tmResult.events,
     sgResult.events,
+    ebResult.events,
   ])
+
+  // ── Web search fallback for keyword searches with thin results ─────
+  // Only fires when: a keyword is given, results are low, and Claude is configured.
+  let webEvents: UnifiedEvent[] = []
+  if (
+    params.keyword &&
+    deduped.length < WEB_SEARCH_THRESHOLD &&
+    env.ANTHROPIC_API_KEY
+  ) {
+    logger.info(
+      { keyword: params.keyword, structuredCount: deduped.length },
+      'Thin results for keyword — triggering Claude web search fallback',
+    )
+    try {
+      webEvents = await searchWebForEvents(
+        params.keyword,
+        params.lat,
+        params.lng,
+        params.radius,
+        deduped,
+      )
+      if (webEvents.length > 0) {
+        logger.info({ webEvents: webEvents.length }, 'Web search found additional events')
+        // Deduplicate web events against the structured results
+        const { events: withWeb } = deduplicateAllSources([deduped, webEvents])
+        deduped.splice(0, deduped.length, ...withWeb)
+      }
+    } catch (err) {
+      logger.warn(
+        { error: err instanceof Error ? err.message : err },
+        'Web search fallback failed — continuing with structured results',
+      )
+    }
+  }
 
   const sorted = sortEvents(deduped, params.sort)
   const start = params.page * params.size
@@ -300,6 +363,8 @@ export async function searchAllSources(params: AggregatedSearchParams): Promise<
     sources: {
       ticketmaster: tmResult.events.length,
       seatgeek: sgResult.events.length,
+      eventbrite: ebResult.events.length,
+      webSearch: webEvents.length,
       duplicatesRemoved,
     },
   }

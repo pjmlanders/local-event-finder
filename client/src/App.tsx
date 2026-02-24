@@ -23,8 +23,8 @@ function NavLink({ to, label, icon }: { to: string; label: string; icon: React.R
   return (
     <Link
       to={to}
-      className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
-        isActive ? 'bg-white/20 text-white' : 'text-indigo-200 hover:text-white'
+      className={`inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+        isActive ? 'bg-indigo-50 text-indigo-700' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
       }`}
     >
       {icon}
@@ -41,7 +41,7 @@ function UserMenu() {
     return (
       <Link
         to="/login"
-        className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-indigo-200 hover:text-white transition-colors"
+        className="inline-flex items-center gap-2 rounded-lg border border-indigo-200 bg-white px-4 py-2 text-sm font-medium text-indigo-600 transition-colors hover:bg-indigo-50 hover:border-indigo-300"
       >
         Sign in
       </Link>
@@ -59,10 +59,10 @@ function UserMenu() {
     <div className="relative">
       <button
         onClick={() => setOpen(o => !o)}
-        className="flex h-8 w-8 items-center justify-center rounded-full bg-white/20 text-xs font-bold text-white hover:bg-white/30 transition-colors"
+        className="flex h-9 w-9 items-center justify-center rounded-full bg-indigo-100 text-xs font-semibold text-indigo-700 transition-colors hover:bg-indigo-200"
       >
         {user.photoURL ? (
-          <img src={user.photoURL} alt="" className="h-8 w-8 rounded-full object-cover" />
+          <img src={user.photoURL} alt="" className="h-9 w-9 rounded-full object-cover" />
         ) : (
           initials
         )}
@@ -70,7 +70,7 @@ function UserMenu() {
       {open && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
-          <div className="absolute right-0 top-10 z-50 w-44 rounded-xl border border-gray-200 bg-white py-1 shadow-lg">
+          <div className="absolute right-0 top-12 z-50 w-48 rounded-xl border border-slate-200 bg-white py-1 shadow-xl">
             <div className="border-b border-gray-100 px-3 py-2">
               <p className="truncate text-xs font-medium text-gray-700">{user.displayName ?? 'User'}</p>
               <p className="truncate text-xs text-gray-400">{user.email}</p>
@@ -115,23 +115,29 @@ function App() {
   const isMapPage = pathname === '/map'
 
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-900">
+    <div className="app-shell text-slate-900">
       {/* Header */}
-      <header className="bg-indigo-600 text-white shadow-lg">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3">
-          <Link to="/" className="flex items-center gap-2">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
-            </svg>
+      <header className="border-b border-slate-200/80 bg-white/95 shadow-sm backdrop-blur-sm">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6">
+          <Link to="/" className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-violet-600 to-indigo-700 text-white shadow-md shadow-indigo-200/60">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+              </svg>
+            </div>
             <div>
-              <h1 className="text-lg font-bold leading-tight">Local Event Finder</h1>
-              {status === 'success' && (
-                <p className="text-xs text-indigo-200">{label}</p>
+              <h1 className="text-base font-bold tracking-tight text-slate-900 sm:text-lg">
+                EventFinder<span className="text-violet-600">.</span>
+              </h1>
+              {status === 'success' ? (
+                <p className="text-xs text-slate-500">{label}</p>
+              ) : (
+                <p className="text-xs font-medium text-violet-500/70">Live events near you</p>
               )}
             </div>
           </Link>
 
-          <nav className="hidden items-center gap-1 sm:flex">
+          <nav className="hidden items-center gap-0.5 sm:flex">
             <NavLink
               to="/"
               label="Home"
@@ -164,24 +170,6 @@ function App() {
               label="AI Search"
               icon={<span className="text-sm leading-none">✨</span>}
             />
-            <NavLink
-              to="/venues"
-              label="Venues"
-              icon={
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4zm3 1h2v2H7V5zm2 4H7v2h2V9zm2-4h2v2h-2V5zm2 4h-2v2h2V9z" clipRule="evenodd" />
-                </svg>
-              }
-            />
-            <NavLink
-              to="/diagnostics"
-              label="Diagnostics"
-              icon={
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" />
-                </svg>
-              }
-            />
             <UserMenu />
           </nav>
         </div>
@@ -189,7 +177,7 @@ function App() {
 
       {/* Main content — no padding/max-width wrapper for MapPage */}
       <ErrorBoundary fallback={<RouteErrorFallback />}>
-        <main className={isMapPage ? '' : 'mx-auto max-w-7xl px-4 py-6 pb-20 sm:pb-6'}>
+        <main className={isMapPage ? '' : 'mx-auto max-w-7xl px-4 py-8 pb-24 sm:px-6 sm:py-10 sm:pb-8'}>
           <Routes>
             <Route path="/" element={<ErrorBoundary><HomePage /></ErrorBoundary>} />
             <Route path="/search" element={<ErrorBoundary><SearchResultsPage /></ErrorBoundary>} />
@@ -208,7 +196,7 @@ function App() {
       </ErrorBoundary>
 
       {/* Mobile bottom nav */}
-      <nav className="fixed bottom-0 left-0 right-0 border-t border-gray-200 bg-white sm:hidden">
+      <nav className="fixed bottom-0 left-0 right-0 z-10 border-t border-slate-200 bg-white/95 shadow-[0_-2px_10px_rgba(0,0,0,0.06)] backdrop-blur-sm sm:hidden">
         <div className="flex">
           <MobileNavItem to="/" label="Home" icon={
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
@@ -235,7 +223,7 @@ function App() {
       </nav>
 
       {/* Spacer for mobile bottom nav */}
-      <div className="h-16 sm:hidden" />
+      <div className="app-shell__spacer h-16 sm:hidden" />
     </div>
   )
 }
@@ -247,7 +235,7 @@ function MobileNavItem({ to, label, icon }: { to: string; label: string; icon: R
     <Link
       to={to}
       className={`flex flex-1 flex-col items-center gap-0.5 py-2 text-xs font-medium ${
-        isActive ? 'text-indigo-600' : 'text-gray-500'
+        isActive ? 'text-indigo-600' : 'text-slate-400'
       }`}
     >
       {icon}

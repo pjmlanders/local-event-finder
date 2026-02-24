@@ -74,8 +74,9 @@ export default function SearchResultsPage() {
     <div className="space-y-4">
       {/* Location prompt */}
       {(!hasLocation || status === 'error') && (
-        <section className="rounded-xl bg-white p-5 shadow-sm">
-          <h2 className="mb-3 text-base font-semibold text-gray-900">Set Your Location</h2>
+        <section className="surface-card p-6">
+          <p className="mb-1 section-title">Get started</p>
+          <h2 className="mb-4 section-title-lg">Set Your Location</h2>
           <LocationPicker />
         </section>
       )}
@@ -83,8 +84,8 @@ export default function SearchResultsPage() {
       {hasLocation && (
         <>
           {/* Search + Filter Bar */}
-          <section className="sticky top-0 z-10 -mx-4 bg-gray-50 px-4 pb-3 pt-1">
-            <div className="rounded-xl border border-gray-200 bg-white p-3 shadow-sm">
+          <section className="sticky top-0 z-10 -mx-4 bg-[var(--app-bg)]/80 px-4 pb-3 pt-1 backdrop-blur-sm">
+            <div className="surface-card p-4">
               {/* Top row: search + toggle */}
               <div className="flex items-center gap-2">
                 <div className="flex-1">
@@ -94,8 +95,8 @@ export default function SearchResultsPage() {
                   onClick={() => setFiltersOpen(!filtersOpen)}
                   className={`relative flex items-center gap-1.5 rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${
                     filtersOpen || activeFilterCount > 0
-                      ? 'border-indigo-300 bg-indigo-50 text-indigo-700'
-                      : 'border-gray-300 text-gray-600 hover:bg-gray-50'
+                      ? 'border-indigo-200 bg-indigo-50 text-indigo-700'
+                      : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
                   }`}
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
@@ -132,8 +133,8 @@ export default function SearchResultsPage() {
           {/* Results header */}
           {data && (
             <div className="flex flex-wrap items-center justify-between gap-2 px-1">
-              <p className="text-sm text-gray-500">
-                <span className="font-semibold text-gray-900">{data.pagination.total.toLocaleString()}</span> events found
+              <p className="text-sm text-slate-500">
+                <span className="font-semibold text-slate-900">{data.pagination.total.toLocaleString()}</span> events found
               </p>
               {data.sources && (data.sources.ticketmaster > 0 || data.sources.seatgeek > 0) && (
                 <p className="text-xs text-gray-400">
@@ -149,14 +150,14 @@ export default function SearchResultsPage() {
           {/* Loading */}
           {isLoading && (
             <div className="py-16 text-center">
-              <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-indigo-200 border-t-indigo-600" />
-              <p className="mt-4 text-sm text-gray-500">Finding events near you...</p>
+              <div className="mx-auto h-9 w-9 animate-spin rounded-full border-2 border-slate-200 border-t-indigo-600" />
+              <p className="mt-4 text-sm text-slate-500">Finding events near you...</p>
             </div>
           )}
 
           {/* Error */}
           {error && (
-            <div className="rounded-xl bg-red-50 p-4 text-red-700">
+            <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-red-700">
               <p className="font-medium">Error loading events</p>
               <p className="text-sm">{error instanceof Error ? error.message : 'Something went wrong'}</p>
             </div>

@@ -24,7 +24,7 @@ export default function SearchBar({ value, onChange, placeholder = 'Search event
     <div className="relative">
       <svg
         xmlns="http://www.w3.org/2000/svg"
-        className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400"
+        className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400"
         viewBox="0 0 20 20"
         fill="currentColor"
       >
@@ -35,12 +35,12 @@ export default function SearchBar({ value, onChange, placeholder = 'Search event
         value={local}
         onChange={(e) => setLocal(e.target.value)}
         placeholder={placeholder}
-        className="w-full rounded-lg border border-gray-300 py-3 pl-10 pr-4 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+        className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-10 pr-4 text-sm transition-colors placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
       />
       {local && (
         <button
           onClick={() => { setLocal(''); onChange('') }}
-          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+          className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 transition-colors hover:text-slate-600"
         >
           <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
             <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />

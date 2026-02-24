@@ -33,11 +33,12 @@ export default function ClusterLayer({ venueGroups, onVenueClick }: ClusterLayer
   const map = useMap()
 
   useEffect(() => {
-    const clusterGroup = (L as unknown as { markerClusterGroup: () => L.LayerGroup }).markerClusterGroup({
+    const MarkerClusterGroup = (L as unknown as { markerClusterGroup: (options?: object) => L.LayerGroup }).markerClusterGroup
+    const clusterGroup = MarkerClusterGroup({
       maxClusterRadius: 60,
       showCoverageOnHover: false,
       spiderfyOnMaxZoom: true,
-    } as object)
+    })
 
     for (const group of venueGroups) {
       const color = TYPE_COLORS[group.primaryType] ?? TYPE_COLORS.other

@@ -23,26 +23,26 @@ export default function Pagination({ page, totalPages, onPageChange }: Paginatio
   }
 
   return (
-    <nav className="flex items-center justify-center gap-1 py-4">
+    <nav className="flex items-center justify-center gap-1 py-6">
       <button
         onClick={() => onPageChange(page - 1)}
         disabled={page === 0}
-        className="rounded-lg px-3 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100 disabled:opacity-40 disabled:hover:bg-transparent"
+        className="rounded-xl px-3 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-100 disabled:opacity-40 disabled:hover:bg-transparent"
       >
         Prev
       </button>
 
       {pages.map((p, i) =>
         p === 'ellipsis' ? (
-          <span key={`ellipsis-${i}`} className="px-2 text-gray-400">...</span>
+          <span key={`ellipsis-${i}`} className="px-2 text-slate-400">...</span>
         ) : (
           <button
             key={p}
             onClick={() => onPageChange(p)}
-            className={`min-w-[36px] rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+            className={`min-w-[36px] rounded-xl px-3 py-2 text-sm font-medium transition-colors ${
               p === page
                 ? 'bg-indigo-600 text-white'
-                : 'text-gray-600 hover:bg-gray-100'
+                : 'text-slate-600 hover:bg-slate-100'
             }`}
           >
             {p + 1}
@@ -53,7 +53,7 @@ export default function Pagination({ page, totalPages, onPageChange }: Paginatio
       <button
         onClick={() => onPageChange(page + 1)}
         disabled={page >= totalPages - 1}
-        className="rounded-lg px-3 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100 disabled:opacity-40 disabled:hover:bg-transparent"
+        className="rounded-xl px-3 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-100 disabled:opacity-40 disabled:hover:bg-transparent"
       >
         Next
       </button>

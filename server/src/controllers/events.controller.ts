@@ -2,6 +2,7 @@ import type { Request, Response, NextFunction } from 'express'
 import { searchAllSources } from '../services/event-aggregator.service.js'
 import { getTicketmasterEventById } from '../services/ticketmaster.service.js'
 import { getSeatgeekEventById } from '../services/seatgeek.service.js'
+import { getEventbriteEventById } from '../services/eventbrite.service.js'
 import type { EventSearchQuery } from '../validators/events.schema.js'
 
 const EVENT_TYPE_TO_CLASSIFICATION: Record<string, string> = {
@@ -12,6 +13,11 @@ const EVENT_TYPE_TO_CLASSIFICATION: Record<string, string> = {
   comedy: 'comedy',
   family: 'family',
   film: 'film',
+}
+
+function nowIso(): string {
+  // TM rejects milliseconds — strip them: "2026-02-24T06:02:11.500Z" → "2026-02-24T06:02:11Z"
+  return new Date().toISOString().replace(/\.\d{3}Z$/, 'Z')
 }
 
 function formatDateForTM(dateStr: string): string {
@@ -30,7 +36,7 @@ export async function searchEvents(_req: Request, res: Response, next: NextFunct
       keyword: query.keyword,
       eventType: query.eventType,
       classificationName: query.eventType ? EVENT_TYPE_TO_CLASSIFICATION[query.eventType] : undefined,
-      startDateTime: query.startDate ? formatDateForTM(query.startDate) : new Date().toISOString(),
+      startDateTime: query.startDate ? formatDateForTM(query.startDate) : nowIso(),
       endDateTime: query.endDate ? formatDateForTM(query.endDate) : undefined,
       page: query.page,
       size: query.size,
@@ -73,6 +79,8 @@ export async function getEventById(req: Request, res: Response, next: NextFuncti
       event = await getTicketmasterEventById(id.slice(3))
     } else if (id.startsWith('sg_')) {
       event = await getSeatgeekEventById(id.slice(3))
+    } else if (id.startsWith('eb_')) {
+      event = await getEventbriteEventById(id.slice(3))
     }
 
     if (!event) {

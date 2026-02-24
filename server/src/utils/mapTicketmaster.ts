@@ -1,5 +1,7 @@
 import type { UnifiedEvent, EventType } from 'shared'
 import type { TmEvent } from '../types/ticketmaster.types.js'
+import { withAffiliateParams } from './affiliateUrls.js'
+import { env } from '../config/env.js'
 
 const SEGMENT_MAP: Record<string, EventType> = {
   'Music': 'music',
@@ -85,7 +87,10 @@ export function mapTicketmasterEvent(tm: TmEvent): UnifiedEvent | null {
         }
       : null,
 
-    url: tm.url,
+    url: withAffiliateParams(tm.url, 'ticketmaster', {
+      ticketmaster: env.TICKETMASTER_AFFILIATE_ID,
+      seatgeek: env.SEATGEEK_AFFILIATE_ID,
+    }),
     popularity: null,
   }
 }

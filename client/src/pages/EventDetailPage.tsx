@@ -43,11 +43,12 @@ const BUY_BUTTON_LABELS: Record<string, string> = {
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
+/** Add UTM params for analytics. Preserves existing affiliate params from server. */
 function addUtm(url: string): string {
   try {
     const u = new URL(url)
-    u.searchParams.set('utm_source', 'localevents')
-    u.searchParams.set('utm_medium', 'referral')
+    if (!u.searchParams.has('utm_source')) u.searchParams.set('utm_source', 'localevents')
+    if (!u.searchParams.has('utm_medium')) u.searchParams.set('utm_medium', 'referral')
     u.searchParams.set('utm_campaign', 'detail')
     return u.toString()
   } catch {
@@ -329,17 +330,22 @@ export default function EventDetailPage() {
             <FavoriteButton event={event} size="md" />
 
             {/* Buy Tickets */}
-            <a
-              href={addUtm(event.url)}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-indigo-700"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                <path d="M2 6a2 2 0 012-2h12a2 2 0 012 2v2a2 2 0 100 4v2a2 2 0 01-2 2H4a2 2 0 01-2-2v-2a2 2 0 100-4V6z" />
-              </svg>
-              {buyLabel}
-            </a>
+            <div className="space-y-1">
+              <a
+                href={addUtm(event.url)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-indigo-700"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path d="M2 6a2 2 0 012-2h12a2 2 0 012 2v2a2 2 0 100 4v2a2 2 0 01-2 2H4a2 2 0 01-2-2v-2a2 2 0 100-4V6z" />
+                </svg>
+                {buyLabel}
+              </a>
+              <p className="text-xs text-slate-500">
+                We may earn a commission when you purchase through our links. No extra cost to you.
+              </p>
+            </div>
           </div>
         </div>
       </div>

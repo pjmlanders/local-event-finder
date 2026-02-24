@@ -1,6 +1,7 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useRef } from 'react'
 import { MapContainer, TileLayer } from 'react-leaflet'
 import { Link } from 'react-router-dom'
+import L from 'leaflet'
 import { useLocation } from '../context/LocationContext'
 import { useEvents } from '../hooks/useEvents'
 import ClusterLayer, { type VenueGroup } from '../components/map/ClusterLayer'
@@ -38,13 +39,24 @@ export default function MapPage() {
   const { lat, lng, radius, status } = useLocation()
   const [selectedVenueKey, setSelectedVenueKey] = useState<string | null>(null)
   const [selectedType, setSelectedType] = useState('')
+  const mapRef = useRef<L.Map | null>(null)
+
+  function handleFitAll(evts: UnifiedEvent[]) {
+    if (!mapRef.current) return
+    const coords = evts
+      .filter(e => e.venue.latitude && e.venue.longitude)
+      .map(e => [e.venue.latitude, e.venue.longitude] as [number, number])
+    if (coords.length > 0) {
+      mapRef.current.fitBounds(coords, { padding: [48, 48], maxZoom: 13 })
+    }
+  }
 
   const params = status === 'success' && lat && lng
     ? { lat, lng, radius, eventType: selectedType || undefined, size: 100 }
     : null
 
   const { data, isLoading } = useEvents(params)
-  const events = data?.events ?? []
+  const events = data?.data ?? []
 
   const venueGroups = useMemo(() => groupEventsByVenue(events), [events])
 
@@ -72,6 +84,7 @@ export default function MapPage() {
   return (
     <div className="relative h-[calc(100vh-64px)] overflow-hidden">
       <MapContainer
+        ref={mapRef}
         center={[lat, lng]}
         zoom={11}
         style={{ height: '100%', width: '100%' }}
@@ -87,8 +100,29 @@ export default function MapPage() {
 
       <MapFilterBar selectedType={selectedType} onTypeChange={setSelectedType} />
 
+      {/* Bottom-left controls: Fit All + event count */}
+      <div className="absolute bottom-6 left-4 z-[1000] flex flex-col items-start gap-2">
+        {events.length > 0 && (
+          <button
+            onClick={() => handleFitAll(events)}
+            title="Zoom to fit all events"
+            className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 shadow-md transition-all hover:bg-slate-50 active:scale-95"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5 text-slate-500" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M3 4a1 1 0 011-1h4a1 1 0 010 2H6.414l2.293 2.293a1 1 0 11-1.414 1.414L5 6.414V8a1 1 0 01-2 0V4zm9 1a1 1 0 010-2h4a1 1 0 011 1v4a1 1 0 01-2 0V6.414l-2.293 2.293a1 1 0 11-1.414-1.414L13.586 5H12zm-9 7a1 1 0 012 0v1.586l2.293-2.293a1 1 0 111.414 1.414L6.414 15H8a1 1 0 010 2H4a1 1 0 01-1-1v-4zm13-1a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 010-2h1.586l-2.293-2.293a1 1 0 111.414-1.414L15 13.586V12a1 1 0 011-1z" clipRule="evenodd" />
+            </svg>
+            Fit All
+          </button>
+        )}
+        {!isLoading && events.length > 0 && (
+          <span className="rounded-full bg-black/50 px-2.5 py-1 text-xs font-medium text-white backdrop-blur-sm">
+            {events.length} event{events.length !== 1 ? 's' : ''}
+          </span>
+        )}
+      </div>
+
       {isLoading && (
-        <div className="absolute bottom-4 left-1/2 z-[1000] -translate-x-1/2 rounded-full bg-white px-4 py-2 text-sm font-medium text-gray-600 shadow-lg">
+        <div className="absolute bottom-6 left-1/2 z-[1000] -translate-x-1/2 rounded-full bg-white px-4 py-2 text-sm font-medium text-gray-600 shadow-lg">
           Loading events...
         </div>
       )}
