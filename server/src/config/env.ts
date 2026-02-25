@@ -6,7 +6,7 @@ const envSchema = z.object({
   SEATGEEK_CLIENT_ID: z.string().optional(),
   EVENTBRITE_API_KEY: z.string().optional(),
   ANTHROPIC_API_KEY: z.string().optional(),
-  NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
+  NODE_ENV: z.string().trim().pipe(z.enum(['development', 'production', 'test'])).default('development'),
   CLIENT_URL: z.string().url().optional(),
   FIREBASE_SERVICE_ACCOUNT_KEY: z.string().optional(),
   SUPABASE_URL: z.string().url().optional(),
