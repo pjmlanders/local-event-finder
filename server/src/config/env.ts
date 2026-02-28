@@ -20,8 +20,9 @@ const envSchema = z.object({
 const parsed = envSchema.safeParse(process.env)
 
 if (!parsed.success) {
-  console.error('Invalid environment variables:', parsed.error.flatten().fieldErrors)
-  process.exit(1)
+  const errors = JSON.stringify(parsed.error.flatten().fieldErrors, null, 2)
+  // Throw instead of process.exit so serverless runtimes (Vercel) can catch and report the error.
+  throw new Error(`Invalid environment variables:\n${errors}`)
 }
 
 export const env = parsed.data
