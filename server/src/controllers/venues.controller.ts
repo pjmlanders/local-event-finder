@@ -140,7 +140,8 @@ export async function getVenueEvents(req: Request, res: Response, next: NextFunc
     }
     const { lat, lng, radius, page, size } = parsed.data
 
-    const rawKey = req.params.venueKey ?? ''
+    const rawParam = req.params.venueKey ?? ''
+    const rawKey = Array.isArray(rawParam) ? rawParam[0] : rawParam
     const venueKey = decodeURIComponent(rawKey)
     const venueName = venueKey.split('|')[0] ?? venueKey
 

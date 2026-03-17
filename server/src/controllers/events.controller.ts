@@ -89,7 +89,7 @@ export async function trackClick(req: Request, res: Response, next: NextFunction
         source: sourceVal,
         ip,
         user_agent: userAgent,
-      })
+      } as any)
     }
 
     res.json({ ok: true })
