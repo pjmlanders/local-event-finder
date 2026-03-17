@@ -33,7 +33,7 @@ const venueEventsSchema = z.object({
   lat: z.coerce.number(),
   lng: z.coerce.number(),
   radius: z.coerce.number().min(1).max(150).default(50),
-  page: z.coerce.number().min(1).default(1),
+  page: z.coerce.number().min(0).default(0),
   size: z.coerce.number().min(1).max(50).default(25),
 })
 
@@ -58,7 +58,7 @@ export async function searchVenues(req: Request, res: Response, next: NextFuncti
       radius,
       keyword: keyword || undefined,
       startDateTime: nowIso(),
-      page: 1,
+      page: 0,
       size: 200,
       sort: 'date',
     })
