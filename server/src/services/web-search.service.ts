@@ -74,9 +74,11 @@ export async function searchWebForEvents(
   const client = getClient()
   const today = new Date().toISOString().split('T')[0]
 
-  const sampleCity  = existingEvents[0]?.venue.city  ?? 'the area'
+  const sampleCity  = existingEvents[0]?.venue.city
   const sampleState = existingEvents[0]?.venue.state ?? ''
-  const locationLabel = sampleState ? `${sampleCity}, ${sampleState}` : sampleCity
+  const locationLabel = sampleCity
+    ? (sampleState ? `${sampleCity}, ${sampleState}` : sampleCity)
+    : `coordinates ${lat.toFixed(4)}, ${lng.toFixed(4)}`
 
   const existingNames = existingEvents.slice(0, 15).map(e => e.name).join(', ')
 
@@ -86,7 +88,9 @@ export async function searchWebForEvents(
     system: (
       `You are an event research assistant. Today is ${today}. ` +
       `Search the web for live events matching the user's query. ` +
-      `Focus on venue websites, Eventbrite pages, local event calendars, Do512, Do202, Bandsintown, Songkick, and local media listings. ` +
+      `Search broadly across: StubHub, TicketsOnSale, Tickets-Center, SeatGeek, venue websites, ` +
+      `Eventbrite pages, FreshTix, Brown Paper Tickets, Bandsintown, Songkick, local event calendars, ` +
+      `Do512, Do202, and local media/arts listings. ` +
       `Extract structured event data using the extract_events tool. ` +
       `Only include events with confirmed dates and venues. ` +
       `Do not include events that are clearly duplicates of the ones already found.`
@@ -97,8 +101,10 @@ export async function searchWebForEvents(
         content: (
           `Search for: "${query}" near ${locationLabel} (within ${radius} miles). Today is ${today}.\n\n` +
           `We already have these events from Ticketmaster/SeatGeek/Eventbrite: ${existingNames || 'none'}\n\n` +
-          `Find additional events NOT in that list, particularly from small/independent venues, ` +
-          `local arts calendars, and community venues. Use the extract_events tool to return them.`
+          `Find additional events NOT in that list. Check StubHub, TicketsOnSale.com, venue websites, ` +
+          `and local arts/entertainment listings. Include events from small/independent venues ` +
+          `and community venues that may use FreshTix, Brown Paper Tickets, or similar platforms. ` +
+          `Use the extract_events tool to return them.`
         ),
       },
     ],

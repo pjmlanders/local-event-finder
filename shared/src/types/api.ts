@@ -12,6 +12,7 @@ export interface SourceBreakdown {
   ticketmaster: number
   seatgeek: number
   eventbrite: number
+  stubhub: number
   webSearch: number
   duplicatesRemoved: number
 }

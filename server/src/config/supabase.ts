@@ -87,6 +87,31 @@ export interface Database {
         }>
         Relationships: []
       }
+      affiliate_clicks: {
+        Row: {
+          id: string
+          event_id: string
+          source: string
+          ip: string | null
+          user_agent: string | null
+          created_at: string
+        }
+        Insert: {
+          event_id: string
+          source: string
+          ip?: string | null
+          user_agent?: string | null
+          created_at?: string
+        }
+        Update: Partial<{
+          event_id: string
+          source: string
+          ip: string | null
+          user_agent: string | null
+          created_at: string
+        }>
+        Relationships: []
+      }
     }
   }
 }
@@ -103,4 +128,10 @@ export function getSupabase(): SupabaseClient<Database> {
     })
   }
   return _supabase
+}
+
+/** Returns Supabase client when configured; null otherwise. Use for optional features like affiliate click persistence. */
+export function getSupabaseOptional(): SupabaseClient<Database> | null {
+  if (!env.SUPABASE_URL || !env.SUPABASE_SERVICE_KEY) return null
+  return getSupabase()
 }

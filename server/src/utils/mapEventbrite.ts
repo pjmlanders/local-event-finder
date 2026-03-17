@@ -1,5 +1,7 @@
 import type { UnifiedEvent, EventType } from 'shared'
 import type { EbEvent } from '../types/eventbrite.types.js'
+import { withAffiliateParams } from './affiliateUrls.js'
+import { env } from '../config/env.js'
 
 // Eventbrite top-level category IDs
 const EB_CATEGORY_MAP: Record<string, EventType> = {
@@ -92,7 +94,7 @@ export function mapEventbriteEvent(eb: EbEvent): UnifiedEvent | null {
         : [],
 
     priceRange,
-    url: eb.url,
+    url: withAffiliateParams(eb.url, 'eventbrite', { eventbrite: env.EVENTBRITE_AFFILIATE_ID }),
     popularity: null,
   }
 }

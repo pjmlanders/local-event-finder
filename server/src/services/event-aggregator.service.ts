@@ -1,6 +1,7 @@
 import { searchTicketmaster } from './ticketmaster.service.js'
 import { searchSeatgeek } from './seatgeek.service.js'
 import { searchEventbrite } from './eventbrite.service.js'
+import { searchStubhub } from './stubhub.service.js'
 import { searchWebForEvents } from './web-search.service.js'
 import { env } from '../config/env.js'
 import { logger } from '../utils/logger.js'
@@ -158,6 +159,7 @@ function isDuplicate(a: UnifiedEvent, b: UnifiedEvent): boolean {
 const SOURCE_PRIORITY: Record<string, number> = {
   ticketmaster: 3,
   eventbrite: 3,    // Structured data, excellent small-venue coverage
+  stubhub: 3,       // Aggregates resale across many platforms including FreshTix events
   seatgeek: 2,
   web: 1,
 }
@@ -265,7 +267,7 @@ export async function searchAllSources(params: AggregatedSearchParams): Promise<
   const fetchSize = Math.min((params.page + 1) * params.size, MAX_FETCH_SIZE)
 
   // ── Fetch all structured APIs in parallel ──────────────────────────
-  const [tmResult, sgResult, ebResult] = await Promise.all([
+  const [tmResult, sgResult, ebResult, shResult] = await Promise.all([
     searchTicketmaster({
       lat: params.lat,
       lng: params.lng,
@@ -301,6 +303,17 @@ export async function searchAllSources(params: AggregatedSearchParams): Promise<
       page: 0,
       size: Math.min(fetchSize, 50),  // EB max page size is 50
     }),
+    searchStubhub({
+      lat: params.lat,
+      lng: params.lng,
+      radius: params.radius,
+      keyword: params.keyword,
+      eventType: params.eventType,
+      startDateTime: params.startDateTime,
+      endDateTime: params.endDateTime,
+      page: 0,
+      size: fetchSize,
+    }),
   ])
 
   logger.info(
@@ -308,6 +321,7 @@ export async function searchAllSources(params: AggregatedSearchParams): Promise<
       ticketmaster: tmResult.events.length,
       seatgeek: sgResult.events.length,
       eventbrite: ebResult.events.length,
+      stubhub: shResult.events.length,
     },
     'Raw results from structured sources',
   )
@@ -317,6 +331,7 @@ export async function searchAllSources(params: AggregatedSearchParams): Promise<
     tmResult.events,
     sgResult.events,
     ebResult.events,
+    shResult.events,
   ])
 
   // ── Web search fallback for keyword searches with thin results ─────
@@ -364,6 +379,7 @@ export async function searchAllSources(params: AggregatedSearchParams): Promise<
       ticketmaster: tmResult.events.length,
       seatgeek: sgResult.events.length,
       eventbrite: ebResult.events.length,
+      stubhub: shResult.events.length,
       webSearch: webEvents.length,
       duplicatesRemoved,
     },

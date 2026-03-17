@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { getFriendlyAuthError } from '../utils/firebaseErrors'
 
 export default function LoginPage() {
   const { signIn, signInWithGoogle } = useAuth()
@@ -22,7 +23,7 @@ export default function LoginPage() {
       await signIn(email, password)
       navigate(from, { replace: true })
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Sign in failed')
+      setError(getFriendlyAuthError(err))
     } finally {
       setIsLoading(false)
     }
@@ -35,7 +36,7 @@ export default function LoginPage() {
       await signInWithGoogle()
       navigate(from, { replace: true })
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Google sign in failed')
+      setError(getFriendlyAuthError(err))
     } finally {
       setIsGoogleLoading(false)
     }

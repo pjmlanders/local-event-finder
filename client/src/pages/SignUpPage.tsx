@@ -1,6 +1,22 @@
 import { useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { getFriendlyAuthError } from '../utils/firebaseErrors'
+
+function getPasswordStrength(pw: string): { score: number; label: string; color: string } {
+  let score = 0
+  if (pw.length >= 8) score++
+  if (pw.length >= 12) score++
+  if (/[a-z]/.test(pw) && /[A-Z]/.test(pw)) score++
+  if (/\d/.test(pw)) score++
+  if (/[^a-zA-Z0-9]/.test(pw)) score++
+
+  if (score <= 1) return { score: 1, label: 'Weak', color: 'bg-red-500' }
+  if (score <= 2) return { score: 2, label: 'Fair', color: 'bg-amber-500' }
+  if (score <= 3) return { score: 3, label: 'Good', color: 'bg-yellow-500' }
+  if (score <= 4) return { score: 4, label: 'Strong', color: 'bg-green-500' }
+  return { score: 5, label: 'Very strong', color: 'bg-emerald-600' }
+}
 
 export default function SignUpPage() {
   const { signUp, signInWithGoogle } = useAuth()
@@ -12,10 +28,20 @@ export default function SignUpPage() {
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
 
+  const strength = password.length > 0 ? getPasswordStrength(password) : null
+
+  function validatePassword(): string | null {
+    if (password.length < 8) return 'Password must be at least 8 characters.'
+    if (!/[a-zA-Z]/.test(password)) return 'Password must contain at least one letter.'
+    if (!/\d/.test(password)) return 'Password must contain at least one number.'
+    return null
+  }
+
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters')
+    const pwError = validatePassword()
+    if (pwError) {
+      setError(pwError)
       return
     }
     setError(null)
@@ -24,7 +50,7 @@ export default function SignUpPage() {
       await signUp(email, password, displayName)
       navigate('/', { replace: true })
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Sign up failed')
+      setError(getFriendlyAuthError(err))
     } finally {
       setIsLoading(false)
     }
@@ -36,7 +62,7 @@ export default function SignUpPage() {
       await signInWithGoogle()
       navigate('/', { replace: true })
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Google sign in failed')
+      setError(getFriendlyAuthError(err))
     }
   }
 
@@ -83,12 +109,31 @@ export default function SignUpPage() {
                 id="password"
                 type="password"
                 required
-                minLength={6}
+                minLength={8}
                 value={password}
                 onChange={e => setPassword(e.target.value)}
                 className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm transition-colors focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
               />
-              <p className="mt-1 text-xs text-slate-500">Minimum 6 characters</p>
+              {strength && (
+                <div className="mt-2 space-y-1">
+                  <div className="flex gap-1">
+                    {[1, 2, 3, 4, 5].map(i => (
+                      <div
+                        key={i}
+                        className={`h-1 flex-1 rounded-full transition-colors ${
+                          i <= strength.score ? strength.color : 'bg-slate-200'
+                        }`}
+                      />
+                    ))}
+                  </div>
+                  <p className="text-xs text-slate-500">
+                    {strength.label} — Use 8+ characters with letters, numbers, and symbols
+                  </p>
+                </div>
+              )}
+              {!strength && (
+                <p className="mt-1 text-xs text-slate-500">Minimum 8 characters with at least one letter and one number</p>
+              )}
             </div>
             <button
               type="submit"

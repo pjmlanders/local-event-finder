@@ -1,15 +1,20 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '../context/AuthContext'
 import { useLocation } from '../context/LocationContext'
-import { getPreferences, updatePreferences } from '../api/users'
+import { getPreferences, updatePreferences, deleteAccount, exportUserData } from '../api/users'
 import { EVENT_TYPES, RADIUS_OPTIONS } from '../lib/constants'
 import type { EventType } from 'shared'
 
 export default function SettingsPage() {
-  const { user } = useAuth()
+  const { user, signOut } = useAuth()
+  const navigate = useNavigate()
   const { lat, lng, radius: currentRadius, method, label } = useLocation()
   const queryClient = useQueryClient()
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [isExporting, setIsExporting] = useState(false)
 
   const { data: prefs, isLoading } = useQuery({
     queryKey: ['preferences'],
@@ -184,6 +189,81 @@ export default function SettingsPage() {
             Saved!
           </span>
         )}
+      </div>
+
+      {/* Data & Privacy */}
+      <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm space-y-4">
+        <h2 className="font-semibold text-gray-900">Data & Privacy</h2>
+
+        {/* Export data */}
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm font-medium text-gray-700">Export your data</p>
+            <p className="text-xs text-gray-500">Download all your profile, preferences, and favorites as JSON</p>
+          </div>
+          <button
+            onClick={async () => {
+              setIsExporting(true)
+              try {
+                const data = await exportUserData()
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+                const url = URL.createObjectURL(blob)
+                const a = document.createElement('a')
+                a.href = url
+                a.download = 'my-eventfinder-data.json'
+                a.click()
+                URL.revokeObjectURL(url)
+              } catch { /* ignore */ }
+              setIsExporting(false)
+            }}
+            disabled={isExporting}
+            className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:opacity-50"
+          >
+            {isExporting ? 'Exporting...' : 'Export data'}
+          </button>
+        </div>
+
+        {/* Delete account */}
+        <div className="border-t border-gray-100 pt-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-red-700">Delete account</p>
+              <p className="text-xs text-gray-500">Permanently remove your account and all associated data</p>
+            </div>
+            {!showDeleteConfirm ? (
+              <button
+                onClick={() => setShowDeleteConfirm(true)}
+                className="rounded-lg border border-red-200 px-4 py-2 text-sm font-medium text-red-600 transition-colors hover:bg-red-50"
+              >
+                Delete account
+              </button>
+            ) : (
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setShowDeleteConfirm(false)}
+                  className="rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={async () => {
+                    setIsDeleting(true)
+                    try {
+                      await deleteAccount()
+                      await signOut()
+                      navigate('/', { replace: true })
+                    } catch { /* ignore */ }
+                    setIsDeleting(false)
+                  }}
+                  disabled={isDeleting}
+                  className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-red-700 disabled:opacity-50"
+                >
+                  {isDeleting ? 'Deleting...' : 'Yes, delete everything'}
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   )

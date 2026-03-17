@@ -4,6 +4,8 @@ const envSchema = z.object({
   PORT: z.coerce.number().default(3002),
   TICKETMASTER_API_KEY: z.string().min(1, 'TICKETMASTER_API_KEY is required'),
   SEATGEEK_CLIENT_ID: z.string().optional(),
+  STUBHUB_CLIENT_ID: z.string().optional(),
+  STUBHUB_CLIENT_SECRET: z.string().optional(),
   EVENTBRITE_API_KEY: z.string().optional(),
   ANTHROPIC_API_KEY: z.string().optional(),
   NODE_ENV: z.string().trim().pipe(z.enum(['development', 'production', 'test'])).default('development'),
@@ -15,6 +17,8 @@ const envSchema = z.object({
   /* Affiliate IDs for click-through revenue. Get them by joining each program. */
   TICKETMASTER_AFFILIATE_ID: z.string().optional(),
   SEATGEEK_AFFILIATE_ID: z.string().optional(),
+  STUBHUB_AFFILIATE_ID: z.string().optional(),
+  EVENTBRITE_AFFILIATE_ID: z.string().optional(),
 })
 
 const parsed = envSchema.safeParse(process.env)

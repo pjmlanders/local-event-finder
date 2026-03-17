@@ -33,3 +33,18 @@ export async function updatePreferences(prefs: Partial<UserPreferences>): Promis
   const { data } = await apiClient.put<UserPreferences>('/users/preferences', prefs)
   return data
 }
+
+export async function deleteAccount(): Promise<void> {
+  await apiClient.delete('/users/account')
+}
+
+export async function exportUserData(): Promise<Record<string, unknown>> {
+  const { data } = await apiClient.get<Record<string, unknown>>('/users/export')
+  return data
+}
+
+export async function trackEventClick(eventId: string, source: string): Promise<void> {
+  await apiClient.post(`/events/${eventId}/click`, { source }).catch(() => {
+    // Fire-and-forget — don't block the user if tracking fails
+  })
+}

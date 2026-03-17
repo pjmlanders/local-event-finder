@@ -32,7 +32,7 @@ export interface PriceRange {
 
 export interface UnifiedEvent {
   id: string
-  source: 'ticketmaster' | 'seatgeek' | 'eventbrite' | 'web'
+  source: 'ticketmaster' | 'seatgeek' | 'eventbrite' | 'stubhub' | 'web'
   sourceId: string
   name: string
   description: string | null

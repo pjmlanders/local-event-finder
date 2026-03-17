@@ -3,6 +3,7 @@ import { useLocation } from '../context/LocationContext'
 import { useEvents } from '../hooks/useEvents'
 import LocationPicker from '../components/search/LocationPicker'
 import EventCard from '../components/events/EventCard'
+import Searchlights from '../components/ui/Searchlights'
 
 const CATEGORIES = [
   {
@@ -51,27 +52,40 @@ export default function HomePage() {
 
   return (
     <div className="space-y-10 sm:space-y-12">
-      {/* Hero */}
-      <section className="relative overflow-hidden rounded-2xl bg-[#0e0a1f] px-6 py-12 text-white sm:px-10 sm:py-16">
-        {/* Violet radial glow — top center */}
-        <div className="pointer-events-none absolute -top-20 left-1/2 h-72 w-[500px] -translate-x-1/2 rounded-full bg-violet-600/25 blur-3xl" />
-        {/* Warm amber glow — bottom right */}
-        <div className="pointer-events-none absolute -bottom-12 -right-12 h-52 w-72 rounded-full bg-amber-500/15 blur-3xl" />
-        {/* Subtle dot grid */}
+      {/* Hero with searchlights */}
+      <section className="relative overflow-hidden rounded-2xl bg-[#0e0a1f] px-6 py-14 text-white sm:px-10 sm:py-20">
+        {/* Searchlight beams */}
+        <Searchlights />
+
+        {/* Star-field / dot grid */}
         <div
-          className="pointer-events-none absolute inset-0 opacity-[0.04]"
-          style={{ backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.8) 1px, transparent 1px)', backgroundSize: '28px 28px' }}
+          className="pointer-events-none absolute inset-0 opacity-[0.06]"
+          style={{ backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.9) 1px, transparent 1px)', backgroundSize: '32px 32px' }}
         />
 
+        {/* Subtle ambient glows behind content */}
+        <div className="pointer-events-none absolute -top-20 left-1/2 h-60 w-[400px] -translate-x-1/2 rounded-full bg-violet-600/20 blur-3xl" />
+        <div className="pointer-events-none absolute top-1/2 left-1/4 h-40 w-40 -translate-y-1/2 rounded-full bg-indigo-500/10 blur-3xl" />
+        <div className="pointer-events-none absolute top-1/2 right-1/4 h-40 w-40 -translate-y-1/2 rounded-full bg-amber-500/8 blur-3xl" />
+
+        {/* Ground reflection stripe */}
+        <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-violet-400/40 to-transparent" />
+        <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-violet-500/5 to-transparent" />
+
         <div className="relative mx-auto max-w-2xl text-center">
-          <span className="mb-4 inline-flex items-center gap-1.5 rounded-full border border-violet-400/30 bg-violet-500/15 px-3 py-1 text-xs font-semibold uppercase tracking-widest text-violet-300">
-            🎟 Live events near you
+          <span className="mb-5 inline-flex items-center gap-2 rounded-full border border-violet-400/30 bg-violet-500/15 px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-violet-300 backdrop-blur-sm">
+            <span className="relative flex h-2 w-2">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-violet-400 opacity-75" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-violet-300" />
+            </span>
+            Live events near you
           </span>
-          <h2 className="mb-4 text-3xl font-bold tracking-tight sm:text-5xl">
-            Your City's Events,<br />
-            <span className="bg-gradient-to-r from-violet-400 to-indigo-400 bg-clip-text text-transparent">All in One Place</span>
+
+          <h2 className="mb-4 text-3xl font-bold tracking-tight sm:text-5xl lg:text-6xl">
+            Tonight's Spotlight<br />
+            <span className="bg-gradient-to-r from-violet-400 via-indigo-400 to-amber-300 bg-clip-text text-transparent">Is on Your City</span>
           </h2>
-          <p className="mb-8 text-base text-slate-300 sm:text-lg">
+          <p className="mb-8 text-base text-slate-300/90 sm:text-lg">
             Concerts, sports, theatre, comedy and more — discover what's happening near you
           </p>
         </div>

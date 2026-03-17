@@ -147,3 +147,47 @@ export async function upsertUserPreferences(firebaseUid: string, prefs: Partial<
     notificationsEnabled: row.notifications_enabled,
   }
 }
+
+// ─── Account deletion (GDPR / privacy) ──────────────────────────────────────
+
+export async function deleteAccount(firebaseUid: string): Promise<void> {
+  const userId = await getUserId(firebaseUid)
+
+  // Delete in dependency order: preferences → favorites → user
+  await db().from('user_preferences').delete().eq('user_id', userId)
+  await db().from('favorites').delete().eq('user_id', userId)
+
+  const { error } = await db().from('users').delete().eq('id', userId)
+  if (error) throw new Error(error.message)
+}
+
+// ─── Data export (GDPR / privacy) ───────────────────────────────────────────
+
+export async function exportUserData(firebaseUid: string): Promise<Record<string, unknown>> {
+  const userId = await getUserId(firebaseUid)
+
+  const { data: user } = await db()
+    .from('users')
+    .select('email, display_name, photo_url, created_at, updated_at')
+    .eq('id', userId)
+    .single()
+
+  const { data: prefs } = await db()
+    .from('user_preferences')
+    .select('default_latitude, default_longitude, default_zip_code, default_radius_miles, preferred_event_types, notifications_enabled')
+    .eq('user_id', userId)
+    .maybeSingle()
+
+  const { data: favorites } = await db()
+    .from('favorites')
+    .select('event_id, event_source, event_name, created_at')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
+
+  return {
+    exportedAt: new Date().toISOString(),
+    profile: user ?? null,
+    preferences: prefs ?? null,
+    favorites: favorites ?? [],
+  }
+}

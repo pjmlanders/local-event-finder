@@ -15,6 +15,11 @@ import SignUpPage from './pages/SignUpPage'
 import FavoritesPage from './pages/FavoritesPage'
 import ProfilePage from './pages/ProfilePage'
 import SettingsPage from './pages/SettingsPage'
+import PrivacyPolicyPage from './pages/PrivacyPolicyPage'
+import TermsPage from './pages/TermsPage'
+import AnalyticsPage from './pages/AnalyticsPage'
+import VenueSearchPage from './pages/VenueSearchPage'
+import VenueDetailPage from './pages/VenueDetailPage'
 import { useState } from 'react'
 
 function NavLink({ to, label, icon }: { to: string; label: string; icon: React.ReactNode }) {
@@ -157,6 +162,15 @@ function App() {
               }
             />
             <NavLink
+              to="/venues"
+              label="Venues"
+              icon={
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4zm3 1h2v2H7V5zm2 4H7v2h2V9zm2-4h2v2h-2V5zm2 4h-2v2h2V9z" clipRule="evenodd" />
+                </svg>
+              }
+            />
+            <NavLink
               to="/map"
               label="Map"
               icon={
@@ -189,8 +203,13 @@ function App() {
             <Route path="/favorites" element={<ErrorBoundary><ProtectedRoute><FavoritesPage /></ProtectedRoute></ErrorBoundary>} />
             <Route path="/profile" element={<ErrorBoundary><ProtectedRoute><ProfilePage /></ProtectedRoute></ErrorBoundary>} />
             <Route path="/settings" element={<ErrorBoundary><ProtectedRoute><SettingsPage /></ProtectedRoute></ErrorBoundary>} />
+            <Route path="/privacy" element={<ErrorBoundary><PrivacyPolicyPage /></ErrorBoundary>} />
+            <Route path="/terms" element={<ErrorBoundary><TermsPage /></ErrorBoundary>} />
+            <Route path="/venues" element={<ErrorBoundary><VenueSearchPage /></ErrorBoundary>} />
+            <Route path="/venues/:venueKey" element={<ErrorBoundary><VenueDetailPage /></ErrorBoundary>} />
             <Route path="/diagnostics" element={<ErrorBoundary><DiagnosticsPage /></ErrorBoundary>} />
-            <Route path="/venues" element={<ErrorBoundary><VenueDiagnosticsPage /></ErrorBoundary>} />
+            <Route path="/venuediag" element={<ErrorBoundary><VenueDiagnosticsPage /></ErrorBoundary>} />
+            <Route path="/analytics" element={<ErrorBoundary><AnalyticsPage /></ErrorBoundary>} />
           </Routes>
         </main>
       </ErrorBoundary>
@@ -208,12 +227,16 @@ function App() {
               <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
             </svg>
           } />
+          <MobileNavItem to="/venues" label="Venues" icon={
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4zm3 1h2v2H7V5zm2 4H7v2h2V9zm2-4h2v2h-2V5zm2 4h-2v2h2V9z" clipRule="evenodd" />
+            </svg>
+          } />
           <MobileNavItem to="/map" label="Map" icon={
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
               <path fillRule="evenodd" d="M12 1.586l-4 4v12.828l4-4V1.586zM3.707 3.293A1 1 0 002 4v10a1 1 0 00.293.707L6 18.414V5.586L3.707 3.293zM17.707 5.293L14 1.586v12.828l2.293 2.293A1 1 0 0018 16V6a1 1 0 00-.293-.707z" clipRule="evenodd" />
             </svg>
           } />
-          <MobileNavItem to="/ai" label="AI" icon={<span className="text-xl leading-none">✨</span>} />
           <MobileNavItem to="/profile" label="Profile" icon={
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
               <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
@@ -221,6 +244,22 @@ function App() {
           } />
         </div>
       </nav>
+
+      {/* Footer */}
+      {!isMapPage && (
+        <footer className="border-t border-slate-200/80 bg-slate-50 pb-20 sm:pb-0">
+          <div className="mx-auto flex max-w-7xl flex-col items-center gap-3 px-4 py-6 text-xs text-slate-400 sm:flex-row sm:justify-between sm:px-6">
+            <p>&copy; {new Date().getFullYear()} EventFinder. All rights reserved.</p>
+            <div className="flex items-center gap-4">
+              <Link to="/privacy" className="transition-colors hover:text-slate-600">Privacy Policy</Link>
+              <Link to="/terms" className="transition-colors hover:text-slate-600">Terms of Service</Link>
+            </div>
+            <p className="text-center sm:text-right">
+              We may earn a commission from ticket purchases made through our links.
+            </p>
+          </div>
+        </footer>
+      )}
 
       {/* Spacer for mobile bottom nav */}
       <div className="app-shell__spacer h-16 sm:hidden" />

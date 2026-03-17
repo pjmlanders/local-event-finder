@@ -9,7 +9,7 @@
  * Parameter names may vary by agreement—verify with each partner.
  */
 
-export type AffiliateSource = 'ticketmaster' | 'seatgeek' | 'web'
+export type AffiliateSource = 'ticketmaster' | 'seatgeek' | 'stubhub' | 'eventbrite' | 'web'
 
 /**
  * Append affiliate tracking parameters to a booking URL.
@@ -18,7 +18,7 @@ export type AffiliateSource = 'ticketmaster' | 'seatgeek' | 'web'
 export function withAffiliateParams(
   url: string,
   source: AffiliateSource,
-  affiliateIds: { ticketmaster?: string; seatgeek?: string }
+  affiliateIds: { ticketmaster?: string; seatgeek?: string; stubhub?: string; eventbrite?: string }
 ): string {
   try {
     const u = new URL(url)
@@ -37,6 +37,24 @@ export function withAffiliateParams(
         if (affiliateIds.seatgeek) {
           // SeatGeek affiliate ID (common param; Impact may use different format)
           u.searchParams.set('aid', affiliateIds.seatgeek)
+          u.searchParams.set('utm_source', 'localevents')
+          u.searchParams.set('utm_medium', 'affiliate')
+        }
+        break
+
+      case 'stubhub':
+        if (affiliateIds.stubhub) {
+          // StubHub affiliate via Partnerize — verify param name after approval
+          u.searchParams.set('afid', affiliateIds.stubhub)
+          u.searchParams.set('utm_source', 'localevents')
+          u.searchParams.set('utm_medium', 'affiliate')
+        }
+        break
+
+      case 'eventbrite':
+        if (affiliateIds.eventbrite) {
+          // Eventbrite affiliate via Awin — verify param name after program approval
+          u.searchParams.set('aff_code', affiliateIds.eventbrite)
           u.searchParams.set('utm_source', 'localevents')
           u.searchParams.set('utm_medium', 'affiliate')
         }

@@ -135,6 +135,13 @@ NODE_ENV=development
 | TanStack Query (not Redux) | All data is server-state; TQ handles caching, refetching, pagination natively |
 | Nominatim for geocoding | Free, no API key needed, sufficient for ZIP-to-coordinates |
 
+## Affiliate / Click-Through Revenue
+- **Ticketmaster**: Set `TICKETMASTER_AFFILIATE_ID` in .env. Join: [affiliate sign-up](https://developer.ticketmaster.com/partners/distribution-partners/affiliate-sign-up/)
+- **SeatGeek**: Set `SEATGEEK_AFFILIATE_ID` in .env. Join via Impact (seatgeek.com partner program)
+- Affiliate params are appended server-side to all Ticketmaster and SeatGeek booking URLs
+- FTC disclosure shown on event detail page ("We may earn a commission...")
+- Verify parameter names with each partner; edit `server/src/utils/affiliateUrls.ts` if needed
+
 ## Known Issues / Notes
 - Server must be started from a terminal (not background process) to persist
 - Ticketmaster free tier: 5,000 calls/day, 5 req/sec

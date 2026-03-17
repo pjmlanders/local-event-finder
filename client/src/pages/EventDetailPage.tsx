@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
 import { apiClient } from '../api/client'
+import { trackEventClick } from '../api/events'
 import type { UnifiedEvent } from 'shared'
 import { formatEventDate, formatEventTime, formatPrice } from '../utils/formatDate'
 import FavoriteButton from '../components/ui/FavoriteButton'
@@ -26,18 +27,23 @@ const TYPE_LABELS: Record<string, string> = {
 }
 
 const SOURCE_LABELS: Record<string, string> = {
-  ticketmaster: 'Ticketmaster', seatgeek: 'SeatGeek', web: 'Web',
+  ticketmaster: 'Ticketmaster', seatgeek: 'SeatGeek', stubhub: 'StubHub',
+  eventbrite: 'Eventbrite', web: 'Web',
 }
 
 const SOURCE_COLORS: Record<string, string> = {
   ticketmaster: 'bg-blue-50 text-blue-600',
   seatgeek: 'bg-emerald-50 text-emerald-600',
-  web: 'bg-orange-50 text-orange-600',
+  stubhub: 'bg-sky-50 text-sky-600',
+  eventbrite: 'bg-orange-50 text-orange-600',
+  web: 'bg-gray-50 text-gray-600',
 }
 
 const BUY_BUTTON_LABELS: Record<string, string> = {
   ticketmaster: 'Buy on Ticketmaster',
   seatgeek: 'Buy on SeatGeek',
+  stubhub: 'Buy on StubHub',
+  eventbrite: 'Get Tickets on Eventbrite',
   web: 'View Event',
 }
 
@@ -331,17 +337,18 @@ export default function EventDetailPage() {
 
             {/* Buy Tickets */}
             <div className="space-y-1">
-              <a
-                href={addUtm(event.url)}
-                target="_blank"
-                rel="noopener noreferrer"
+              <button
+                onClick={() => {
+                  trackEventClick(event.id, event.source)
+                  window.open(addUtm(event.url), '_blank', 'noopener,noreferrer')
+                }}
                 className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-indigo-700"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                   <path d="M2 6a2 2 0 012-2h12a2 2 0 012 2v2a2 2 0 100 4v2a2 2 0 01-2 2H4a2 2 0 01-2-2v-2a2 2 0 100-4V6z" />
                 </svg>
                 {buyLabel}
-              </a>
+              </button>
               <p className="text-xs text-slate-500">
                 We may earn a commission when you purchase through our links. No extra cost to you.
               </p>
